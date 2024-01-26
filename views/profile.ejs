@@ -1,0 +1,48 @@
+<% include ./partials/header.ejs %>
+
+<div class="w-screen h-screen bg-zinc-300">
+
+    <form hidden id="uploadimg" action="/fileupload" method="post" enctype="multipart/form-data">
+        <input type="file" name="image">
+    </form>
+
+    <div class="py-8 flex flex-col items-center">
+       <div class="relative">
+        <span id="uploadicon" class="w-8 h-8 absolute bottom-0 right-0 rounded-full bg-zinc-100 flex justify-center items-center">
+            <i class="ri-pencil-fill"></i>
+        </span>
+
+        <div class="h-40 w-40 rounded-full bg-zinc-400 overflow-hidden">
+            <img class="w-full h-full object-cover" src="/images/uploads/<%= user.profileImg %>" alt="">
+        </div>
+       </div>
+
+        <h1 class="text-3xl font-bold mt-2"><%= user.name %></h1>
+        <h5>@<%=user.username%></h5>
+
+        <a href="" class="mt-6 px-8 py-1 bg-blue-500 rounded-full text-white font-semibold">Edit</a>
+
+        <a href="/add" class="bg-red-500 py-1 px-3 rounded-lg text-white mt-5">Add New Post</a>
+    </div>
+
+    <div class="mt-5 px-5">
+        <div>
+            <div class="h-40 w-60 bg-zinc-500 rounded-lg overflow-hidden">
+                <img class="w-full h-full object-cover" src="/images/uploads/<%=user?.posts[0]?.image%>" alt="">
+            </div>
+            <a href="/show" class="inline-block font-bold text-xl">All Your Pins</a>
+            <h5 class="opacity-95"><%=user.posts.length%> Pins</h5>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelector("#uploadicon").addEventListener('click', function(){
+        document.querySelector("#uploadimg input").click();
+    })
+
+    document.querySelector("#uploadimg input").addEventListener('change', function(){
+        document.querySelector("#uploadimg").submit();
+    })
+</script>
+<% include ./partials/footer.ejs %>

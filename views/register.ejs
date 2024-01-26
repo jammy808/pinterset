@@ -1,0 +1,37 @@
+<% include ./partials/header.ejs %>
+
+<div class="w-screen h-screen bg-zinc-400 flex items-center justify-center">
+
+  <div class="w-[30vw] bg-zinc-200 rounded-3xl px-20 py-8">
+
+    <img src="https://static-00.iconduck.com/assets.00/pinterest-icon-2048x2048-d7p0u7c5.png" class="block mx-auto h-10 w-10 rounded-full block text-center" >
+
+    <h1 class="text-3xl font-semibold text-center mt-4">Sign Up To See More</h1>
+    <h3 class="text-center mt-1">Discovery starts here</h3>
+
+    <form action="/register" method="post">
+      <label class="block mt-3" for="user">Username :</label>
+      <input class="block w-full border-zinc-400 border-2 rounded-lg bg-zinc-200 p-1" type="text" name="username" placeholder="Username">
+
+      <label class="block mt-3" for="name">Name :</label>
+      <input class="block w-full border-zinc-400 border-2 rounded-lg bg-zinc-200 p-1" type="text" name="name" placeholder="Name">
+
+      <label class="block mt-3" for="email">Email :</label>
+      <input class="block w-full border-zinc-400 border-2 rounded-lg bg-zinc-200 p-1" type="text" name="email" placeholder="Email">
+
+      <label class="block mt-3" for="password">Password :</label>
+      <input class="block w-full border-zinc-400 border-2 rounded-lg bg-zinc-200 p-1" type="password" name="password" placeholder="Password">
+
+      <input class="w-full mt-5 bg-red-600 py-2 text-white font-bold rounded-full" type="submit" value="Register">
+    </form>
+
+    <p class="text-center text-xs mt-6">By continuing, you agree to Pinterest's <b>Terms of Service</b>; Opens a new tab and acknowledge you've read our <b>Privacy Policy; Opens a new tab. Notice at collection; Opens a new tab.</b>
+    </p>
+
+    <a href="/" class="block text-center text-xs mt-6 font-semibold">Already a member? <b>Login</b></a>
+
+  </div>
+
+</div>
+
+<% include ./partials/footer.ejs %>

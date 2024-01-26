@@ -1,0 +1,21 @@
+<% include ./partials/header.ejs %>
+
+<div class="w-screen h-screen bg-zinc-700 px-6 py-5">
+    <div class="cards flex flex-wrap gap-10 text-white">
+
+        <% user.posts.forEach(function(ele){ %>
+
+            <div class="card w-32">
+                <div class="h-40 w-full bg-zinc-500 rounded-lg overflow-hidden">
+                    <img class="w-full h-full object-cover" src="/images/uploads/<%=ele?.image%>" alt="">
+                </div>
+                <h1 class="inline-block font-bold text-xl"><%=ele.title%></h1>
+                <h5 class="opacity-95"><%=ele.description%></h5>
+            </div>
+
+        <% }) %>
+      
+    </div>
+</div>
+
+<% include ./partials/footer.ejs %>

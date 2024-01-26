@@ -40,7 +40,7 @@ router.post('https://pinterset.vercel.app/register', function(req, res, next) {
   })
 });
 
-router.post('/login', passport.authenticate("local" , {
+router.post('/logon', passport.authenticate("local" , {
   successRedirect : "/profile",
   failureRedirect : "/"
 }) , function(req, res, next){});

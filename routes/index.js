@@ -26,7 +26,7 @@ router.get('/register', function(req, res, next) {
   res.render('register', {nav : false});
 });
 
-router.post('https://pinterset.vercel.app/register', function(req, res, next) {
+router.post('/register', function(req, res, next) {
   var userData = new userModel({
     username : req.body.username,
     name : req.body.name,

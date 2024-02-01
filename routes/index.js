@@ -8,6 +8,17 @@ const localStratergy = require('passport-local');
 const passport = require('passport');
 passport.use(new localStratergy(userModel.authenticate()));
 
+const { MongoClient } = require('mongodb');  //
+const { GridFSBucket } = require('mongodb');
+const { createReadStream } = require('fs');
+const Datauri = require('datauri');
+
+const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+    client.connect();
+    const database = client.db('your-database-name');
+    const bucket = new GridFSBucket(database); //
+
 
 router.get('/profile', isLoggedIn ,async function(req, res, next) {
   const user = await userModel.findOne({username : req.session.passport.user}).populate('posts');
@@ -64,24 +75,63 @@ router.post('/fileupload', isLoggedIn , upload.single('image') , async function(
   res.redirect('/profile');
 });
 
-router.post('/createpost', isLoggedIn , upload.single('postImg') , async function(req, res, next) {
-  const user = await userModel.findOne({username : req.session.passport.user});
-  const post = await postModel.create({
-    user : user._id,
-    title : req.body.title,
-    description : req.body.description,
-    image : req.file.filename
-  });
+router.post('/createpost', isLoggedIn , upload.single('postImg') , async function(req, res, next) { //
+  try {
 
-  user.posts.push(post._id);
-  await user.save();
+    const user = await userModel.findOne({ username: req.session.passport.user });
+
+    const uploadStream = bucket.openUploadStream(req.file.filename);
+    const readStream = createReadStream(req.file.path);
+
+    readStream.pipe(uploadStream);
+
+    uploadStream.on('finish', async () => {
+      const post = await postModel.create({
+        user: user._id,
+        title: req.body.title,
+        description: req.body.description,
+        image: req.file.filename,
+      });
+
+      user.posts.push(post._id);
+      await user.save();
+
+      res.redirect('/profile');
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  } 
+
+  
   res.redirect('/profile');
 
 });
 
-router.get('/show', isLoggedIn ,async function(req, res, next) {
+router.get('/show', isLoggedIn ,async function(req, res, next) { //
   const user = await userModel.findOne({username : req.session.passport.user}).populate('posts');
-  res.render('show',{user , nav : true });
+  
+  const postsWithImages = await Promise.all(user.posts.map(async (post) => {
+    const downloadStream = bucket.openDownloadStreamByName(post.image);
+    
+    let imageBase64 = '';
+    downloadStream.on('data', (chunk) => {
+      imageBase64 += chunk.toString('base64');
+    });
+
+    await new Promise((resolve) => {
+      downloadStream.on('end', () => {
+        post.imageBase64 = `data:image/jpeg;base64,${imageBase64}`;
+        console.log(`Image Base64 for ${post.title}: ${post.imageBase64}`);
+        resolve();
+      });
+    });
+    
+    return post;
+  }));
+
+  res.render('show', { user, nav: true, postsWithImages });
 });
 
 router.get('/feed', isLoggedIn ,async function(req, res, next) {

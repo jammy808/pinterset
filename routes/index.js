@@ -12,6 +12,7 @@ const { MongoClient } = require('mongodb');  //
 const { GridFSBucket } = require('mongodb');
 const { createReadStream } = require('fs');
 const Datauri = require('datauri');
+const { Readable } = require('stream');
 
 const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -75,13 +76,19 @@ router.post('/fileupload', isLoggedIn , upload.single('image') , async function(
   res.redirect('/profile');
 });
 
-router.post('/createpost', isLoggedIn , upload.single('postImg') , async function(req, res, next) { //
+router.post('/createpost', isLoggedIn , async function(req, res, next) { //
   try {
 
     const user = await userModel.findOne({ username: req.session.passport.user });
 
-    const uploadStream = bucket.openUploadStream(req.file.filename);
-    const readStream = createReadStream(req.file.path);
+    const uploadedFile = req.files.postImg;
+    
+
+    const fileBuffer = Buffer.from(uploadedFile.data);
+
+    const uploadStream = bucket.openUploadStream(uploadedFile.name);
+    const readStream = Readable.from(fileBuffer);
+    
 
     readStream.pipe(uploadStream);
 
@@ -90,7 +97,7 @@ router.post('/createpost', isLoggedIn , upload.single('postImg') , async functio
         user: user._id,
         title: req.body.title,
         description: req.body.description,
-        image: req.file.filename,
+        image: uploadedFile.name,
       });
 
       user.posts.push(post._id);
@@ -105,7 +112,7 @@ router.post('/createpost', isLoggedIn , upload.single('postImg') , async functio
   } 
 
   
-  res.redirect('/profile');
+  
 
 });
 
@@ -141,3 +148,4 @@ router.get('/feed', isLoggedIn ,async function(req, res, next) {
 });
 
 module.exports = router;
+//remove multer thingy ,header set thingy

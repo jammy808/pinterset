@@ -13,7 +13,7 @@
         </span>
 
         <div class="h-40 w-40 rounded-full bg-zinc-400 overflow-hidden">
-            <img class="w-full h-full object-cover" src="/images/uploads/<%= user.profileImg %>" alt="">
+            <img class="w-full h-full object-cover" src="<%=  user.imageBase64  %>" alt="">
         </div>
        </div>
 
@@ -28,7 +28,7 @@
     <div class="mt-5 px-5">
         <div>
             <div class="h-40 w-60 bg-zinc-500 rounded-lg overflow-hidden">
-                <img class="w-full h-full object-cover" src="/images/uploads/<%=user?.posts[0]?.image%>" alt="">
+                <img class="w-full h-full object-cover" src="<%= postsWithImages[0].imageBase64 %>" alt="">
             </div>
             <a href="/show" class="inline-block font-bold text-xl">All Your Pins</a>
             <h5 class="opacity-95"><%=user.posts.length%> Pins</h5>

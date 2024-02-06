@@ -23,7 +23,43 @@ const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true,
 
 router.get('/profile', isLoggedIn ,async function(req, res, next) {
   const user = await userModel.findOne({username : req.session.passport.user}).populate('posts');
-  res.render('profile',{user , nav : true });
+
+  const downloadStream = bucket.openDownloadStreamByName(user.profileImg);
+    
+  let imageBase64 = '';
+  downloadStream.on('data', (chunk) => {
+    imageBase64 += chunk.toString('base64');
+  });
+
+  await new Promise((resolve) => {
+    downloadStream.on('end', () => {
+      user.imageBase64 = `data:image/jpeg;base64,${imageBase64}`;
+      //console.log(`Image Base64 for ${post.title}: ${post.imageBase64}`);
+      resolve();
+    });
+  });
+
+   
+  const postsWithImages = await Promise.all(user.posts.map(async (post) => {
+    const downloadStream = bucket.openDownloadStreamByName(post.image);
+    
+    let imageBase64 = '';
+    downloadStream.on('data', (chunk) => {
+      imageBase64 += chunk.toString('base64');
+    });
+
+    await new Promise((resolve) => {
+      downloadStream.on('end', () => {
+        post.imageBase64 = `data:image/jpeg;base64,${imageBase64}`;
+        console.log(`Image Base64 for ${post.title}: ${post.imageBase64}`);
+        resolve();
+      });
+    });
+    
+    return post;
+  }));  
+
+  res.render('profile',{user , nav : true , postsWithImages });
 });
 
 router.get('/add', isLoggedIn ,async function(req, res, next) {
@@ -69,11 +105,27 @@ function isLoggedIn(req,res,next){
   res.redirect("/");
 }
 
-router.post('/fileupload', isLoggedIn , upload.single('image') , async function(req, res, next) {
+router.post('/fileupload', isLoggedIn , async function(req, res, next) {
   const user = await userModel.findOne({username : req.session.passport.user});
-  user.profileImg = req.file.filename;
-  await user.save();
-  res.redirect('/profile');
+
+  const uploadedFile = req.files.image;
+
+  const fileBuffer = Buffer.from(uploadedFile.data);
+
+  const uploadStream = bucket.openUploadStream(uploadedFile.name);
+  const readStream = Readable.from(fileBuffer);
+    
+  readStream.pipe(uploadStream);
+
+  
+  uploadStream.on('finish', async () => {
+    user.profileImg = uploadedFile.name;
+
+     
+    await user.save();
+    res.redirect('/profile');
+    });
+
 });
 
 router.post('/createpost', isLoggedIn , async function(req, res, next) { //
@@ -111,9 +163,6 @@ router.post('/createpost', isLoggedIn , async function(req, res, next) { //
     res.status(500).json({ message: 'Internal Server Error' });
   } 
 
-  
-  
-
 });
 
 router.get('/show', isLoggedIn ,async function(req, res, next) { //
@@ -139,13 +188,32 @@ router.get('/show', isLoggedIn ,async function(req, res, next) { //
   }));
 
   res.render('show', { user, nav: true, postsWithImages });
-});
+}); 
 
 router.get('/feed', isLoggedIn ,async function(req, res, next) {
   const user = await userModel.findOne({username : req.session.passport.user});
   const posts = await postModel.find().populate('user');
-  res.render('feed',{user , posts, nav : true });
+
+  const postsWithImages = await Promise.all(posts.map(async (post) => {
+    const downloadStream = bucket.openDownloadStreamByName(post.image);
+    
+    let imageBase64 = '';
+    downloadStream.on('data', (chunk) => {
+      imageBase64 += chunk.toString('base64');
+    });
+
+    await new Promise((resolve) => {
+      downloadStream.on('end', () => {
+        post.imageBase64 = `data:image/jpeg;base64,${imageBase64}`;
+        console.log(`Image Base64 for ${post.title}: ${post.imageBase64}`);
+        resolve();
+      });
+    });
+    
+    return post;
+  }));
+
+  res.render('feed',{user ,  postsWithImages, nav : true });
 });
 
 module.exports = router;
-//remove multer thingy ,header set thingy

@@ -24,7 +24,8 @@ const client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true,
 router.get('/profile', isLoggedIn ,async function(req, res, next) {
   const user = await userModel.findOne({username : req.session.passport.user}).populate('posts');
 
-  const downloadStream = bucket.openDownloadStreamByName(user.profileImg);
+  if(user.profileImg != null ){
+    const downloadStream = bucket.openDownloadStreamByName(user.profileImg);
     
   let imageBase64 = '';
   downloadStream.on('data', (chunk) => {
@@ -38,26 +39,29 @@ router.get('/profile', isLoggedIn ,async function(req, res, next) {
       resolve();
     });
   });
+  }
 
    
-  const postsWithImages = await Promise.all(user.posts.map(async (post) => {
-    const downloadStream = bucket.openDownloadStreamByName(post.image);
-    
-    let imageBase64 = '';
-    downloadStream.on('data', (chunk) => {
-      imageBase64 += chunk.toString('base64');
-    });
-
-    await new Promise((resolve) => {
-      downloadStream.on('end', () => {
-        post.imageBase64 = `data:image/jpeg;base64,${imageBase64}`;
-        console.log(`Image Base64 for ${post.title}: ${post.imageBase64}`);
-        resolve();
+    const postsWithImages = await Promise.all(user.posts.map(async (post) => {
+      const downloadStream = bucket.openDownloadStreamByName(post.image);
+      
+      let imageBase64 = '';
+      downloadStream.on('data', (chunk) => {
+        imageBase64 += chunk.toString('base64');
       });
-    });
-    
-    return post;
-  }));  
+  
+      await new Promise((resolve) => {
+        downloadStream.on('end', () => {
+          post.imageBase64 = `data:image/jpeg;base64,${imageBase64}`;
+          console.log(`Image Base64 for ${post.title}: ${post.imageBase64}`);
+          resolve();
+        });
+      });
+      
+      return post;
+    }));  
+
+  
 
   res.render('profile',{user , nav : true , postsWithImages });
 });

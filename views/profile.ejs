@@ -25,10 +25,12 @@
         <a href="/add" class="bg-red-500 py-1 px-3 rounded-lg text-white mt-5">Add New Post</a>
     </div>
 
-    <div class="mt-5 px-5">
+    <div class="mt-5 px-5">                      
         <div>
             <div class="h-40 w-60 bg-zinc-500 rounded-lg overflow-hidden">
-                <img class="w-full h-full object-cover" src="<%= postsWithImages[0].imageBase64 %>" alt="">
+               <% if(postsWithImages != null && postsWithImages.length > 0){ %>
+                <img class="w-full h-full object-cover" src=" <%= postsWithImages[0].imageBase64 %>" alt="">
+              <% } %>
             </div>
             <a href="/show" class="inline-block font-bold text-xl">All Your Pins</a>
             <h5 class="opacity-95"><%=user.posts.length%> Pins</h5>

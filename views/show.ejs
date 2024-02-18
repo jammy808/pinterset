@@ -1,20 +1,20 @@
 <% include ./partials/header.ejs %>
 
-<div class="w-full h-full bg-zinc-300 px-6 py-5">
-    <div class="cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-white">
+<div class="w-screen h-screen bg-zinc-700 px-6 py-5">
+    <div class="cards flex flex-wrap gap-10 text-white">
 
         <% postsWithImages.forEach(function(post){ %>
 
-            <div class="card w-auto">
-                <div class=" w-full max-h-72 bg-zinc-500 rounded-lg overflow-hidden">
-                    <img class="w-full object-cover" src="<%= post.imageBase64 %>" alt="">
+            <div class="card w-32">
+                <div class="h-40 w-full bg-zinc-500 rounded-lg overflow-hidden">
+                    <img class="w-full h-full object-cover" src="<%= post.imageBase64 %>" alt="">
                 </div>
-                <h1 class="inline-block font-bold text-xl md:text-2xl lg:text-3xl  p-3 pb-1 text-black"><%=post.title%></h1>
-                <h5 class="opacity-95 px-3 text-black text-lg md:text-xl lg:text-2xl"><%=post.description%></h5>
+                <h1 class="inline-block font-bold text-xl"><%=post.title%></h1>
+                <h5 class="opacity-95"><%=post.description%></h5>
             </div>
 
         <% }) %>
-      
+        
     </div>
 </div>
 
